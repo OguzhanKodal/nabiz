@@ -2,6 +2,7 @@ import "@fontsource-variable/inter";
 import "./style.css";
 import { api } from "./api";
 import { icon } from "./icons";
+import { fanLabel, lang, setLang, t, trError, type Lang } from "./i18n";
 import appIcon from "../packaging/icon.svg";
 import type { FeatureState, KbdInfo, KbdState, Snapshot, SystemInfo } from "./types";
 
@@ -9,42 +10,53 @@ import type { FeatureState, KbdInfo, KbdState, Snapshot, SystemInfo } from "./ty
 
 type ViewId = "overview" | "performance" | "battery" | "display" | "input" | "system";
 
-const VIEWS: { id: ViewId; label: string; icon: string; subtitle: string }[] = [
-  { id: "overview", label: "Genel Bakış", icon: icon.home, subtitle: "Sistemin anlık durumu" },
-  { id: "performance", label: "Performans", icon: icon.gauge, subtitle: "Güç modu, fanlar ve açılış" },
-  { id: "battery", label: "Pil", icon: icon.battery, subtitle: "Şarj modu ve pil sağlığı" },
-  { id: "display", label: "Ekran & GPU", icon: icon.monitor, subtitle: "Ekran kartı ve panel ayarları" },
-  { id: "input", label: "Klavye & Işık", icon: icon.keyboard, subtitle: "Tuşlar, touchpad, kamera ve ışıklar" },
-  { id: "system", label: "Sistem", icon: icon.info, subtitle: "Cihaz bilgisi ve sürücüler" },
+const VIEWS: { id: ViewId; icon: string }[] = [
+  { id: "overview", icon: icon.home },
+  { id: "performance", icon: icon.gauge },
+  { id: "battery", icon: icon.battery },
+  { id: "display", icon: icon.monitor },
+  { id: "input", icon: icon.keyboard },
+  { id: "system", icon: icon.info },
 ];
 
-const PROFILES: Record<string, { label: string; desc: string; icon: string; color: string }> = {
+type ProfileKey = "quiet" | "balanced" | "performance" | "custom";
+const PROFILES: Record<string, { key: ProfileKey; icon: string; color: string }> = {
   // Legion'larda firmware'in "Quiet" modu low-power olarak görünür.
-  "low-power": { label: "Sessiz", desc: "Fanlar sakin, pil uzun gider", icon: icon.leaf, color: "#5b9dff" },
-  quiet: { label: "Sessiz", desc: "Fanlar sakin, pil uzun gider", icon: icon.leaf, color: "#5b9dff" },
-  balanced: { label: "Dengeli", desc: "Günlük kullanım için", icon: icon.scale, color: "#3ee0b0" },
-  "balanced-performance": { label: "Özel", desc: "Kendi güç ve fan ayarın", icon: icon.sparkles, color: "#b58cff" },
-  performance: { label: "Performans", desc: "Oyun ve ağır işler", icon: icon.flame, color: "#ff5d4f" },
-  custom: { label: "Özel", desc: "Kendi güç ve fan ayarın", icon: icon.sparkles, color: "#ffb547" },
+  "low-power": { key: "quiet", icon: icon.leaf, color: "#5b9dff" },
+  quiet: { key: "quiet", icon: icon.leaf, color: "#5b9dff" },
+  balanced: { key: "balanced", icon: icon.scale, color: "#3ee0b0" },
+  "balanced-performance": { key: "custom", icon: icon.sparkles, color: "#b58cff" },
+  performance: { key: "performance", icon: icon.flame, color: "#ff5d4f" },
+  custom: { key: "custom", icon: icon.sparkles, color: "#ffb547" },
 };
+const profLabel = (k: ProfileKey) => t(`profile.${k}`);
+const profDesc = (k: ProfileKey) => t(`profile.${k}.desc`);
 
-const FEATURES: Record<string, { label: string; desc: string; icon: string }> = {
-  conservation: { label: "Pil koruma", desc: "Prize takılıyken şarjı yaklaşık %60'ta tutar, pilin ömrünü uzatır.", icon: icon.shield },
-  rapid_charge: { label: "Hızlı şarj", desc: "Pili daha kısa sürede doldurur. Pil korumayla aynı anda açılamaz.", icon: icon.bolt },
-  usb_charging: { label: "Her zaman açık USB", desc: "Laptop kapalıyken ya da uykudayken de USB'den cihaz şarj eder.", icon: icon.usb },
-  gsync: { label: "Hibrit mod", desc: "Kapatırsan ekran doğrudan NVIDIA karta bağlanır (sadece harici GPU). Yeniden başlatınca geçerli olur.", icon: icon.gpu },
-  overdrive: { label: "Ekran OverDrive", desc: "Pikseller daha hızlı tepki verir, hızlı sahnelerde iz azalır.", icon: icon.monitorBolt },
-  fn_lock: { label: "Fn kilidi", desc: "F1–F12 tuşları Fn'ye basmadan çalışır.", icon: icon.lock },
-  win_key: { label: "Windows tuşu", desc: "Kapatırsan oyunda yanlışlıkla menü açılmaz.", icon: icon.windows },
-  touchpad: { label: "Touchpad", desc: "Fare takılıyken kapatabilirsin.", icon: icon.touchpad },
-  camera: { label: "Kamera", desc: "Kapatınca kamera sistemden tamamen ayrılır.", icon: icon.camera },
-  kbd_backlight: { label: "Klavye ışığı", desc: "Arka ışık parlaklığı.", icon: icon.sun },
-  logo_led: { label: "Logo ışığı", desc: "Kapağın arkasındaki logo.", icon: icon.logo },
-  ioport_led: { label: "Arka port ışığı", desc: "Arka bağlantı noktalarının ışığı.", icon: icon.ports },
-  fan_max: { label: "Fanları tam hıza al", desc: "Toz temizleme için. Birkaç dakika açık tut, sonra kapat.", icon: icon.fan },
-  instant_boot_ac: { label: "Prize takınca açıl", desc: "Adaptör takıldığında laptop kendiliğinden açılır.", icon: icon.plug },
-  instant_boot_usb_pd: { label: "USB-C şarjla açıl", desc: "USB-C şarj aleti takıldığında açılır.", icon: icon.plug },
+const FEATURE_ICONS: Record<string, string> = {
+  conservation: icon.shield,
+  rapid_charge: icon.bolt,
+  usb_charging: icon.usb,
+  gsync: icon.gpu,
+  overdrive: icon.monitorBolt,
+  fn_lock: icon.lock,
+  win_key: icon.windows,
+  touchpad: icon.touchpad,
+  camera: icon.camera,
+  kbd_backlight: icon.sun,
+  logo_led: icon.logo,
+  ioport_led: icon.ports,
+  fan_max: icon.fan,
+  instant_boot_ac: icon.plug,
+  instant_boot_usb_pd: icon.plug,
 };
+type FeatureId =
+  | "conservation" | "rapid_charge" | "usb_charging" | "gsync" | "overdrive" | "fn_lock" | "win_key" | "touchpad"
+  | "camera" | "kbd_backlight" | "logo_led" | "ioport_led" | "fan_max" | "instant_boot_ac" | "instant_boot_usb_pd";
+const fmeta = (id: string) => ({
+  label: t(`f.${id as FeatureId}`),
+  desc: t(`f.${id as FeatureId}.desc`),
+  icon: FEATURE_ICONS[id],
+});
 
 const QUICK = ["conservation", "fn_lock", "camera", "touchpad", "overdrive", "win_key"];
 
@@ -86,22 +98,22 @@ function tempColor(t: number | null): string {
 
 function batteryStatus(s: Snapshot): string {
   const b = s.sensors.battery;
-  if (!b.present) return "Pil bulunamadı";
+  if (!b.present) return t("batt.none");
   switch (b.status) {
-    case "Charging": return "Şarj oluyor";
-    case "Discharging": return "Pilden çalışıyor";
-    case "Full": return "Dolu";
-    case "Not charging": return on("conservation") ? "Koruma modunda bekliyor" : "Şarj edilmiyor";
-    default: return b.acOnline ? "Prize takılı" : "Pilden çalışıyor";
+    case "Charging": return t("batt.charging");
+    case "Discharging": return t("batt.discharging");
+    case "Full": return t("batt.full");
+    case "Not charging": return on("conservation") ? t("batt.held") : t("batt.notCharging");
+    default: return b.acOnline ? t("batt.plugged") : t("batt.discharging");
   }
 }
 
 function gpuState(s: Snapshot): string {
   const g = s.sensors.gpu;
-  if (!g.present) return "Harici GPU yok";
-  if (g.state === "active") return "Çalışıyor";
-  if (g.state === "suspended") return "Uykuda · pil tasarrufu";
-  return g.state ?? "Bilinmiyor";
+  if (!g.present) return t("gpu.none");
+  if (g.state === "active") return t("gpu.active");
+  if (g.state === "suspended") return t("gpu.suspended");
+  return g.state ?? t("gpu.unknown");
 }
 
 // ---------- Parçalar ----------
@@ -123,14 +135,14 @@ function gauge(key: string, label: string, ic: string): string {
 }
 
 function toggleRow(id: string, opts: { note?: string } = {}): string {
-  const m = FEATURES[id];
+  const m = fmeta(id);
   const f = feat(id);
   const avail = !!f?.available;
   return `
   <div class="row ${avail ? "" : "is-off"}" data-row="${id}">
     <span class="row-ic">${m.icon}</span>
     <div class="row-text">
-      <span class="row-title">${m.label}${avail ? "" : `<span class="tag">Desteklenmiyor</span>`}</span>
+      <span class="row-title">${m.label}${avail ? "" : `<span class="tag">${t("common.unsupported")}</span>`}</span>
       <span class="row-desc">${m.desc}${opts.note ? ` <em>${opts.note}</em>` : ""}</span>
     </div>
     <label class="switch">
@@ -141,11 +153,11 @@ function toggleRow(id: string, opts: { note?: string } = {}): string {
 }
 
 function levelRow(id: string): string {
-  const m = FEATURES[id];
+  const m = fmeta(id);
   const f = feat(id);
   const max = f?.max ?? 0;
   const avail = !!f?.available && max > 0;
-  const names = max === 2 ? ["Kapalı", "Düşük", "Yüksek"] : null;
+  const names = max === 2 ? [t("common.off"), t("common.low"), t("common.high")] : null;
   const opts = avail
     ? Array.from({ length: max + 1 }, (_, i) => `<button data-level="${id}" data-v="${i}">${names ? names[i] : i}</button>`).join("")
     : "";
@@ -153,7 +165,7 @@ function levelRow(id: string): string {
   <div class="row ${avail ? "" : "is-off"}">
     <span class="row-ic">${m.icon}</span>
     <div class="row-text">
-      <span class="row-title">${m.label}${avail ? "" : `<span class="tag">Desteklenmiyor</span>`}</span>
+      <span class="row-title">${m.label}${avail ? "" : `<span class="tag">${t("common.unsupported")}</span>`}</span>
       <span class="row-desc">${m.desc}</span>
     </div>
     <div class="seg seg-sm">${opts}</div>
@@ -163,11 +175,12 @@ function levelRow(id: string): string {
 function profileSwitcher(big = false): string {
   const choices = snap?.profile.choices ?? [];
   if (!choices.length) {
-    return `<div class="empty">${icon.alert}<span>Bu sistemde güç modu desteklenmiyor.</span></div>`;
+    return `<div class="empty">${icon.alert}<span>${t("profile.unsupported")}</span></div>`;
   }
   return `<div class="modes ${big ? "modes-big" : ""}">${choices
     .map((c) => {
-      const m = PROFILES[c] ?? { label: c, desc: "", icon: icon.gauge, color: "#9aa4b2" };
+      const p = PROFILES[c];
+      const m = p ? { label: profLabel(p.key), desc: profDesc(p.key), icon: p.icon, color: p.color } : { label: c, desc: "", icon: icon.gauge, color: "#9aa4b2" };
       return `<button class="mode" data-profile="${c}" style="--mc:${m.color}">
         <span class="mode-ic">${m.icon}</span>
         <span class="mode-label">${m.label}</span>
@@ -186,16 +199,16 @@ function fansCard(): string {
       <div class="fan">
         <span class="fan-ic" data-spin="${i}">${icon.fan}</span>
         <div class="fan-body">
-          <div class="fan-top"><span>${esc(f.label)}</span><b><span data-fan-rpm="${i}">—</span> <small>RPM</small></b></div>
+          <div class="fan-top"><span>${esc(fanLabel(f.label))}</span><b><span data-fan-rpm="${i}">—</span> <small>RPM</small></b></div>
           <div class="bar"><i data-fan-bar="${i}"></i></div>
         </div>
       </div>`,
         )
         .join("")
     : snap?.sensors.fansUnreliable
-      ? `<div class="empty small">${icon.alert}<span>Fan sensörü bu modelde yanlış bilgi veriyor (sıcakken bile 0 gösteriyor). Legion sürücüsüyle doğru okunur.</span></div>`
-      : `<div class="empty small">${icon.alert}<span>Fan devri okunamıyor. Legion sürücüsü gerekiyor olabilir.</span></div>`;
-  return `<div class="card"><div class="card-h"><span>Fanlar</span></div>${body}</div>`;
+      ? `<div class="empty small">${icon.alert}<span>${t("fan.unreliable")}</span></div>`
+      : `<div class="empty small">${icon.alert}<span>${t("fan.unreadable")}</span></div>`;
+  return `<div class="card"><div class="card-h"><span>${t("fan.title")}</span></div>${body}</div>`;
 }
 
 function batteryVisual(): string {
@@ -213,7 +226,7 @@ function stat(label: string, bind: string, unit = ""): string {
 function chartCard(): string {
   return `
   <div class="card span-2">
-    <div class="card-h"><span>Sıcaklık geçmişi</span>
+    <div class="card-h"><span>${t("card.history")}</span>
       <span class="legend"><i style="--c:var(--accent)"></i>CPU <i style="--c:#8fa3ff"></i>GPU</span>
     </div>
     <svg class="chart" viewBox="0 0 400 120" preserveAspectRatio="none">
@@ -234,56 +247,56 @@ function chartCard(): string {
 function viewOverview(): string {
   return `
   <div class="card span-3 hero">
-    <div class="card-h"><span>Güç modu</span><span class="hint">Fn + Q ile de değişir</span></div>
+    <div class="card-h"><span>${t("card.power")}</span><span class="hint">${t("card.power.hint")}</span></div>
     ${profileSwitcher()}
   </div>
   <div class="card gauge-card">
-    ${gauge("cpu", "İşlemci", icon.chip)}
-    <div class="mini-stats">${stat("Yük", "cpuUsage", "%")}${stat("Frekans", "cpuFreq", "GHz")}</div>
+    ${gauge("cpu", t("stat.cpu"), icon.chip)}
+    <div class="mini-stats">${stat(t("stat.load"), "cpuUsage", "%")}${stat(t("stat.freq"), "cpuFreq", "GHz")}</div>
   </div>
   <div class="card gauge-card">
-    ${gauge("gpu", "Ekran kartı", icon.gpu)}
-    <div class="mini-stats">${stat("Durum", "gpuStateShort")}${stat("Güç", "gpuPower", "W")}</div>
+    ${gauge("gpu", t("stat.gpu"), icon.gpu)}
+    <div class="mini-stats">${stat(t("stat.state"), "gpuStateShort")}${stat(t("stat.power"), "gpuPower", "W")}</div>
   </div>
   <div class="card batt-card">
-    <div class="card-h"><span>Pil</span><span class="pill" data-bind="acState">—</span></div>
+    <div class="card-h"><span>${t("card.battery")}</span><span class="pill" data-bind="acState">—</span></div>
     <div class="batt-row">${batteryVisual()}<div><b class="big"><span data-bind="battPct">—</span><small>%</small></b><span class="muted" data-bind="battStatus">—</span></div></div>
-    <div class="mini-stats">${stat("Güç", "battPower", "W")}${stat("Sağlık", "battHealth", "%")}</div>
+    <div class="mini-stats">${stat(t("stat.power"), "battPower", "W")}${stat(t("stat.health"), "battHealth", "%")}</div>
   </div>
   ${chartCard()}
   ${fansCard()}
   <div class="card span-3">
-    <div class="card-h"><span>Hızlı ayarlar</span></div>
+    <div class="card-h"><span>${t("card.quick")}</span></div>
     <div class="quick">${QUICK.map((id) => quickTile(id)).join("")}</div>
   </div>`;
 }
 
 function quickTile(id: string): string {
-  const m = FEATURES[id];
+  const m = fmeta(id);
   const avail = !!feat(id)?.available;
   return `<button class="tile" data-tile="${id}" ${avail ? "" : "disabled"}>
     <span class="tile-ic">${m.icon}</span><span class="tile-label">${m.label}</span>
-    <span class="tile-state" data-tile-state="${id}">${avail ? "" : "Yok"}</span>
+    <span class="tile-state" data-tile-state="${id}">${avail ? "" : t("common.none")}</span>
   </button>`;
 }
 
 function viewPerformance(): string {
   return `
   <div class="card span-3 hero">
-    <div class="card-h"><span>Güç modu</span><span class="hint">Fn + Q ile de değişir</span></div>
+    <div class="card-h"><span>${t("card.power")}</span><span class="hint">${t("card.power.hint")}</span></div>
     ${profileSwitcher(true)}
   </div>
   <div class="card span-2">
-    <div class="card-h"><span>Yük</span></div>
+    <div class="card-h"><span>${t("card.load")}</span></div>
     <div class="stats-grid">
-      ${stat("İşlemci yükü", "cpuUsage", "%")}${stat("Ortalama frekans", "cpuFreq", "GHz")}
-      ${stat("İşlemci sıcaklığı", "cpuTemp", "°C")}${stat("Bellek", "mem", "GB")}
-      ${stat("GPU sıcaklığı", "gpuTemp", "°C")}${stat("Anakart (EC)", "icTemp", "°C")}
+      ${stat(t("stat.cpuLoad"), "cpuUsage", "%")}${stat(t("stat.avgFreq"), "cpuFreq", "GHz")}
+      ${stat(t("stat.cpuTemp"), "cpuTemp", "°C")}${stat(t("stat.mem"), "mem", "GB")}
+      ${stat(t("stat.gpuTemp"), "gpuTemp", "°C")}${stat(t("stat.ec"), "icTemp", "°C")}
     </div>
   </div>
   ${fansCard()}
   <div class="card span-3">
-    <div class="card-h"><span>Fan ve açılış</span></div>
+    <div class="card-h"><span>${t("card.fanBoot")}</span></div>
     ${toggleRow("fan_max")}${toggleRow("instant_boot_ac")}${toggleRow("instant_boot_usb_pd")}
   </div>`;
 }
@@ -297,21 +310,21 @@ function viewBattery(): string {
       <span class="muted" data-bind="battStatus">—</span></div>
     </div>
     <div class="stats-grid">
-      ${stat("Anlık güç", "battPower", "W")}${stat("Pil sağlığı", "battHealth", "%")}
-      ${stat("Şarj döngüsü", "battCycles")}${stat("Kapasite", "battCap", "Wh")}
+      ${stat(t("stat.nowPower"), "battPower", "W")}${stat(t("stat.battHealth"), "battHealth", "%")}
+      ${stat(t("stat.cycles"), "battCycles")}${stat(t("stat.capacity"), "battCap", "Wh")}
     </div>
   </div>
   <div class="card span-3">
-    <div class="card-h"><span>Şarj modu</span></div>
+    <div class="card-h"><span>${t("card.charge")}</span></div>
     ${
       charge
         ? `<div class="seg seg-wide">
-        <button data-charge="normal">${icon.battery}<span>Normal<small>%100'e kadar</small></span></button>
-        <button data-charge="conservation" ${feat("conservation")?.available ? "" : "disabled"}>${icon.shield}<span>Koruma<small>~%60'ta tutar</small></span></button>
-        <button data-charge="rapid" ${feat("rapid_charge")?.available ? "" : "disabled"}>${icon.bolt}<span>Hızlı<small>Kısa sürede doldurur</small></span></button>
+        <button data-charge="normal">${icon.battery}<span>${t("charge.normal")}<small>${t("charge.normal.sub")}</small></span></button>
+        <button data-charge="conservation" ${feat("conservation")?.available ? "" : "disabled"}>${icon.shield}<span>${t("charge.conservation")}<small>${t("charge.conservation.sub")}</small></span></button>
+        <button data-charge="rapid" ${feat("rapid_charge")?.available ? "" : "disabled"}>${icon.bolt}<span>${t("charge.rapid")}<small>${t("charge.rapid.sub")}</small></span></button>
       </div>
-      <p class="note">Laptop çoğunlukla prize takılıysa <b>Koruma</b> en iyisi: pil sürekli %100'de beklemez, yıllar içinde daha az yıpranır.</p>`
-        : `<div class="empty">${icon.alert}<span>Şarj modu ayarı bulunamadı. <code>ideapad_laptop</code> sürücüsü yüklü değil olabilir.</span></div>`
+      <p class="note">${t("charge.tip")}</p>`
+        : `<div class="empty">${icon.alert}<span>${t("charge.missing")}</span></div>`
     }
   </div>
   <div class="card span-3">${toggleRow("usb_charging")}</div>`;
@@ -321,43 +334,43 @@ function viewDisplay(): string {
   return `
   <div class="card span-3 gpu-hero">
     <span class="gpu-hero-ic">${icon.gpu}</span>
-    <div><span class="muted">Harici ekran kartı</span><b class="big" data-bind="gpuName">—</b><span class="pill" data-bind="gpuState">—</span></div>
-    <div class="stats-grid">${stat("Sıcaklık", "gpuTemp", "°C")}${stat("Kullanım", "gpuUtil", "%")}${stat("Güç", "gpuPower", "W")}</div>
+    <div><span class="muted">${t("display.dgpu")}</span><b class="big" data-bind="gpuName">—</b><span class="pill" data-bind="gpuState">—</span></div>
+    <div class="stats-grid">${stat(t("stat.temp"), "gpuTemp", "°C")}${stat(t("stat.util"), "gpuUtil", "%")}${stat(t("stat.power"), "gpuPower", "W")}</div>
   </div>
   <div class="card span-3">
-    ${toggleRow("gsync", { note: "Kapalıyken pil daha hızlı biter." })}
+    ${toggleRow("gsync", { note: t("f.gsync.note") })}
     ${toggleRow("overdrive")}
   </div>
-  <p class="note span-3">Ekran kartı uyurken Nabız ona dokunmaz. Sıcaklık bilgisi o sırada anakarttan okunur.</p>`;
+  <p class="note span-3">${t("display.note")}</p>`;
 }
 
-const KBD_EFFECTS: { id: KbdState["effect"]; label: string }[] = [
-  { id: "static", label: "Sabit" },
-  { id: "breath", label: "Nefes" },
-  { id: "smooth", label: "Renk döngüsü" },
-  { id: "wave-left", label: "Dalga ←" },
-  { id: "wave-right", label: "Dalga →" },
-  { id: "off", label: "Kapalı" },
+const KBD_EFFECTS: { id: KbdState["effect"]; label: () => string }[] = [
+  { id: "static", label: () => t("fx.static") },
+  { id: "breath", label: () => t("fx.breath") },
+  { id: "smooth", label: () => t("fx.smooth") },
+  { id: "wave-left", label: () => t("fx.waveLeft") },
+  { id: "wave-right", label: () => t("fx.waveRight") },
+  { id: "off", label: () => t("common.off") },
 ];
 
-const KBD_PRESETS: { name: string; colors: string[] }[] = [
-  { name: "Nabız", colors: ["3ee0b0", "3ee0b0", "3ee0b0", "3ee0b0"] },
-  { name: "Buz", colors: ["5b9dff", "5b9dff", "5b9dff", "5b9dff"] },
-  { name: "Ateş", colors: ["ff5d4f", "ff5d4f", "ff5d4f", "ff5d4f"] },
-  { name: "Mor", colors: ["b58cff", "b58cff", "b58cff", "b58cff"] },
-  { name: "Beyaz", colors: ["ffffff", "ffffff", "ffffff", "ffffff"] },
-  { name: "Gün batımı", colors: ["ff5d4f", "ff8a3d", "ffb547", "ffd86b"] },
-  { name: "Okyanus", colors: ["1e6bff", "2f9dff", "3ec8e0", "3ee0b0"] },
-  { name: "Gökkuşağı", colors: ["ff4d6d", "ffb547", "3ee0b0", "5b9dff"] },
+const KBD_PRESETS: string[][] = [
+  ["3ee0b0", "3ee0b0", "3ee0b0", "3ee0b0"],
+  ["5b9dff", "5b9dff", "5b9dff", "5b9dff"],
+  ["ff5d4f", "ff5d4f", "ff5d4f", "ff5d4f"],
+  ["b58cff", "b58cff", "b58cff", "b58cff"],
+  ["ffffff", "ffffff", "ffffff", "ffffff"],
+  ["ff5d4f", "ff8a3d", "ffb547", "ffd86b"],
+  ["1e6bff", "2f9dff", "3ec8e0", "3ee0b0"],
+  ["ff4d6d", "ffb547", "3ee0b0", "5b9dff"],
 ];
 
 function kbdCard(): string {
   if (!kbd?.available) {
-    return `<div class="card span-3">${`<div class="empty">${icon.alert}<span>Bölgesel RGB klavye bulunamadı.</span></div>`}</div>`;
+    return `<div class="card span-3">${`<div class="empty">${icon.alert}<span>${t("kbd.missing")}</span></div>`}</div>`;
   }
   const zones = [0, 1, 2, 3]
     .map(
-      (z) => `<label class="zone" data-zone-box="${z}" title="${z + 1}. bölgenin rengini seç">
+      (z) => `<label class="zone" data-zone-box="${z}" title="${t("kbd.zone", { n: z + 1 })}">
         <input type="color" data-zone="${z}"/>
         <span class="keys">${"<i></i>".repeat(z === 3 ? 16 : 28)}</span>
         <span class="zone-n">${z + 1}</span>
@@ -366,17 +379,17 @@ function kbdCard(): string {
     .join("");
   return `
   <div class="card span-3 kbd-card">
-    <div class="card-h"><span>RGB klavye</span><span class="hint">Bir bölgeye tıklayıp rengini seç</span></div>
+    <div class="card-h"><span>${t("kbd.title")}</span><span class="hint">${t("kbd.hint")}</span></div>
     <div class="kbd" data-kbd>${zones}</div>
     <div class="kbd-controls">
-      <div class="seg seg-fx">${KBD_EFFECTS.map((e) => `<button data-fx="${e.id}">${e.label}</button>`).join("")}</div>
+      <div class="seg seg-fx">${KBD_EFFECTS.map((e) => `<button data-fx="${e.id}">${e.label()}</button>`).join("")}</div>
       <div class="presets">${KBD_PRESETS.map(
-        (p, i) => `<button class="swatch" data-preset="${i}" title="${p.name}" style="background:linear-gradient(90deg,${p.colors.map((c, j) => `#${c} ${j * 25}% ${(j + 1) * 25}%`).join(",")})"></button>`,
+        (p, i) => `<button class="swatch" data-preset="${i}" title="${t(`preset.${i}` as "preset.0")}" style="background:linear-gradient(90deg,${p.map((c, j) => `#${c} ${j * 25}% ${(j + 1) * 25}%`).join(",")})"></button>`,
       ).join("")}</div>
       <div class="kbd-row">
-        <span class="muted">Parlaklık</span>
-        <div class="seg seg-sm"><button data-kbright="1">Düşük</button><button data-kbright="2">Yüksek</button></div>
-        <span class="muted" data-speed-label>Hız</span>
+        <span class="muted">${t("kbd.brightness")}</span>
+        <div class="seg seg-sm"><button data-kbright="1">${t("common.low")}</button><button data-kbright="2">${t("common.high")}</button></div>
+        <span class="muted" data-speed-label>${t("kbd.speed")}</span>
         <div class="seg seg-sm" data-speed-seg>${[1, 2, 3, 4].map((s) => `<button data-kspeed="${s}">${s}</button>`).join("")}</div>
       </div>
     </div>
@@ -415,7 +428,7 @@ function pushKbd(now = false) {
       try {
         await api.setKeyboard(kbd!.state);
       } catch (e) {
-        toast(String(e), "err");
+        toast(trError(e), "err");
       }
     },
     now ? 0 : 140,
@@ -426,15 +439,15 @@ function viewInput(): string {
   return `
   ${kbdCard()}
   <div class="card span-3">
-    <div class="card-h"><span>Klavye</span></div>
+    <div class="card-h"><span>${t("card.keyboard")}</span></div>
     ${toggleRow("fn_lock")}${toggleRow("win_key")}${kbd?.available ? "" : levelRow("kbd_backlight")}
   </div>
   <div class="card span-3">
-    <div class="card-h"><span>Giriş ve gizlilik</span></div>
+    <div class="card-h"><span>${t("card.privacy")}</span></div>
     ${toggleRow("touchpad")}${toggleRow("camera")}
   </div>
   <div class="card span-3">
-    <div class="card-h"><span>Işıklar</span></div>
+    <div class="card-h"><span>${t("card.lights")}</span></div>
     ${toggleRow("logo_led")}${toggleRow("ioport_led")}
   </div>`;
 }
@@ -449,32 +462,32 @@ function viewSystem(): string {
     <div class="row">
       <span class="row-ic ${okay ? "ok" : "bad"}">${okay ? icon.check : icon.alert}</span>
       <div class="row-text"><span class="row-title">${name}</span><span class="row-desc">${desc}</span></div>
-      <span class="pill ${okay ? "pill-ok" : "pill-bad"}">${okay ? "Yüklü" : "Yok"}</span>
+      <span class="pill ${okay ? "pill-ok" : "pill-bad"}">${okay ? t("sys.installed") : t("common.none")}</span>
     </div>`;
   return `
   <div class="card span-3">
-    <div class="card-h"><span>Cihaz</span>${s?.demo ? `<span class="pill">Demo verisi</span>` : ""}</div>
+    <div class="card-h"><span>${t("card.device")}</span>${s?.demo ? `<span class="pill">${t("sys.demo")}</span>` : ""}</div>
     <div class="kv-grid">
-      ${item("Model", s?.model)}${item("Makine tipi", s?.machineType)}
-      ${item("İşlemci", s?.cpu)}${item("BIOS", s?.bios)}
-      ${item("İşletim sistemi", s?.os)}${item("Çekirdek", s?.kernel)}
+      ${item(t("sys.model"), s?.model)}${item(t("sys.machine"), s?.machineType)}
+      ${item(t("sys.cpu"), s?.cpu)}${item("BIOS", s?.bios)}
+      ${item(t("sys.os"), s?.os)}${item(t("sys.kernel"), s?.kernel)}
     </div>
   </div>
   <div class="card span-3">
-    <div class="card-h"><span>Sürücüler</span></div>
-    ${drv("ideapad_laptop", !!s?.ideapadDriver, "Pil koruma, Fn kilidi, kamera, USB şarjı. Linux çekirdeğiyle birlikte gelir.")}
-    ${drv("legion_laptop", !!s?.legionDriver, "Fan devri, hızlı şarj, GPU modu, OverDrive, ışıklar. LenovoLegionLinux projesinden.")}
+    <div class="card-h"><span>${t("card.drivers")}</span></div>
+    ${drv("ideapad_laptop", !!s?.ideapadDriver, t("sys.ideapad"))}
+    ${drv("legion_laptop", !!s?.legionDriver, t("sys.legion"))}
     ${
       s && !s.legionDriver
         ? `<div class="install">
-        <p>Eksik özellikleri açmak için Legion sürücüsünü kur (Arch / CachyOS):</p>
-        <div class="cmd"><code>${INSTALL_CMD}</code><button class="icon-btn" data-copy="${INSTALL_CMD}" title="Kopyala">${icon.copy}</button></div>
-        <p class="muted">Kurduktan sonra bilgisayarı yeniden başlat. Sürücü bağımsız bir açık kaynak projedir (johnfanv2/LenovoLegionLinux).</p>
+        <p>${t("sys.install")}</p>
+        <div class="cmd"><code>${INSTALL_CMD}</code><button class="icon-btn" data-copy="${INSTALL_CMD}" title="${t("common.copy")}">${icon.copy}</button></div>
+        <p class="muted">${t("sys.installNote")}</p>
       </div>`
         : ""
     }
   </div>
-  <p class="note span-3">Nabız bağımsız bir açık kaynak projedir; Lenovo ile bağlantısı yoktur.</p>`;
+  <p class="note span-3">${t("sys.disclaimer")}</p>`;
 }
 
 const RENDER: Record<ViewId, () => string> = {
@@ -493,13 +506,14 @@ function shell() {
   <div class="app">
     <aside class="nav">
       <div class="brand"><img class="brand-ic" src="${appIcon}" alt="" /><div><b>Nabız</b><small data-bind="model">—</small></div></div>
-      <nav>${VIEWS.map((v) => `<button class="nav-item" data-view="${v.id}">${v.icon}<span>${v.label}</span></button>`).join("")}</nav>
+      <nav>${VIEWS.map((v) => `<button class="nav-item" data-view="${v.id}">${v.icon}<span>${t(`view.${v.id}`)}</span></button>`).join("")}</nav>
       <div class="nav-foot">
+        <div class="seg seg-sm seg-lang">${(["tr", "en"] as Lang[]).map((l) => `<button data-lang="${l}" class="${l === lang ? "active" : ""}">${l.toUpperCase()}</button>`).join("")}</div>
         <div class="now-mode"><span class="dot"></span><span data-bind="profileLabel">—</span></div>
       </div>
     </aside>
     <main>
-      <header class="top"><div><h1 data-title></h1><p data-subtitle></p></div><span class="live"><i></i>Canlı</span></header>
+      <header class="top"><div><h1 data-title></h1><p data-subtitle></p></div><span class="live"><i></i>${t("common.live")}</span></header>
       <section class="grid" id="view"></section>
     </main>
     <div class="toasts" id="toasts"></div>
@@ -508,8 +522,8 @@ function shell() {
 
 function renderView() {
   const v = VIEWS.find((x) => x.id === view)!;
-  document.querySelector("[data-title]")!.textContent = v.label;
-  document.querySelector("[data-subtitle]")!.textContent = v.subtitle;
+  document.querySelector("[data-title]")!.textContent = t(`view.${v.id}`);
+  document.querySelector("[data-subtitle]")!.textContent = t(`view.${v.id}.sub`);
   document.querySelectorAll<HTMLElement>("[data-view]").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
   const el = document.getElementById("view")!;
   el.innerHTML = RENDER[view]();
@@ -551,16 +565,16 @@ function update() {
 
   const binds: Record<string, string> = {
     model: sys?.model ?? "Legion",
-    profileLabel: pm ? `${pm.label} mod` : "Güç modu yok",
+    profileLabel: pm ? t("profile.mode", { label: profLabel(pm.key) }) : t("profile.none"),
     cpuTemp: n(s.cpuTemp),
     gpuTemp: n(s.gpu.temp),
     cpuUsage: n(s.cpuUsage),
     cpuFreq: s.cpuFreqMhz ? (s.cpuFreqMhz / 1000).toFixed(2) : "—",
     mem: s.memUsedGb != null && s.memTotalGb ? `${s.memUsedGb.toFixed(1)} / ${s.memTotalGb.toFixed(0)}` : "—",
     icTemp: n(s.icTemp),
-    gpuName: s.gpu.name ?? (s.gpu.present ? "NVIDIA GPU" : "Bulunamadı"),
+    gpuName: s.gpu.name ?? (s.gpu.present ? "NVIDIA GPU" : t("gpu.notFound")),
     gpuState: gpuState(snap),
-    gpuStateShort: !s.gpu.present ? "Yok" : s.gpu.state === "active" ? "Aktif" : "Uykuda",
+    gpuStateShort: !s.gpu.present ? t("gpu.short.none") : s.gpu.state === "active" ? t("gpu.short.active") : t("gpu.short.sleep"),
     gpuUtil: n(s.gpu.util),
     gpuPower: n(s.gpu.power, 1),
     battPct: n(b.percent),
@@ -569,7 +583,7 @@ function update() {
     battHealth: n(b.health, 0),
     battCycles: b.cycles != null ? String(b.cycles) : "—",
     battCap: b.fullWh != null && b.designWh != null ? `${b.fullWh.toFixed(1)} / ${b.designWh.toFixed(0)}` : "—",
-    acState: b.acOnline ? "Prizde" : "Pilde",
+    acState: b.acOnline ? t("batt.ac") : t("batt.onBattery"),
   };
   document.querySelectorAll<HTMLElement>("[data-bind]").forEach((el) => {
     const v = binds[el.dataset.bind!];
@@ -621,7 +635,7 @@ function update() {
     if (!feat(id)?.available) return;
     el.classList.toggle("active", on(id));
     const st = el.querySelector("[data-tile-state]");
-    if (st) st.textContent = on(id) ? "Açık" : "Kapalı";
+    if (st) st.textContent = on(id) ? t("common.on") : t("common.off");
   });
   document.querySelectorAll<HTMLElement>("[data-level]").forEach((el) => {
     el.classList.toggle("active", feat(el.dataset.level!)?.value === Number(el.dataset.v));
@@ -665,9 +679,9 @@ async function setFeature(id: string, value: number) {
   busy.add(id);
   try {
     await api.setFeature(id, value);
-    if (id === "gsync") toast("Değişiklik yeniden başlatınca geçerli olacak");
+    if (id === "gsync") toast(t("toast.reboot"));
   } catch (e) {
-    toast(String(e), "err");
+    toast(trError(e), "err");
   } finally {
     busy.delete(id);
     await poll();
@@ -682,10 +696,14 @@ async function setCharge(mode: string) {
 }
 
 document.addEventListener("click", async (ev) => {
-  const t = (ev.target as HTMLElement).closest<HTMLElement>("button");
-  if (!t || t.hasAttribute("disabled")) return;
-  const d = t.dataset;
-  if (d.view) {
+  const btn = (ev.target as HTMLElement).closest<HTMLElement>("button");
+  if (!btn || btn.hasAttribute("disabled")) return;
+  const d = btn.dataset;
+  if (d.lang) {
+    setLang(d.lang as Lang);
+    shell();
+    renderView();
+  } else if (d.view) {
     view = d.view as ViewId;
     try { localStorage.setItem("nabiz.view", view); } catch {}
     renderView();
@@ -694,7 +712,7 @@ document.addEventListener("click", async (ev) => {
       await api.setProfile(d.profile);
       await poll();
     } catch (e) {
-      toast(String(e), "err");
+      toast(trError(e), "err");
     }
   } else if (d.tile) {
     await setFeature(d.tile, on(d.tile) ? 0 : 1);
@@ -706,7 +724,7 @@ document.addEventListener("click", async (ev) => {
     kbd.state.effect = d.fx as KbdState["effect"];
     pushKbd(true);
   } else if (d.preset && kbd) {
-    kbd.state.colors = [...KBD_PRESETS[Number(d.preset)].colors];
+    kbd.state.colors = [...KBD_PRESETS[Number(d.preset)]];
     if (kbd.state.effect === "off" || kbd.state.effect === "smooth" || kbd.state.effect.startsWith("wave")) kbd.state.effect = "static";
     pushKbd(true);
   } else if (d.kbright && kbd) {
@@ -717,7 +735,7 @@ document.addEventListener("click", async (ev) => {
     pushKbd(true);
   } else if (d.copy) {
     await navigator.clipboard?.writeText(d.copy).catch(() => {});
-    toast("Komut kopyalandı");
+    toast(t("toast.copied"));
   }
 });
 
@@ -737,6 +755,7 @@ document.addEventListener("input", (ev) => {
 
 // ---------- Başlat ----------
 
+setLang(lang);
 shell();
 api.systemInfo().then((s) => {
   sys = s;

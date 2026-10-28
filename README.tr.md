@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/overview.png" alt="Nabız genel bakış ekranı" width="900">
+  <img src="docs/screenshots/tr/overview.png" alt="Nabız genel bakış ekranı" width="900">
 </p>
 
 ## Neden yaptık
@@ -38,19 +38,20 @@ Nabız bu ayarları tek, sade ve sisteme yakışan bir uygulamada topluyor:
 | **Ekran & GPU** | Hibrit mod (kapalıyken yalnızca harici GPU), ekran OverDrive. NVIDIA kart sırf bilgi okumak için uyandırılmaz |
 | **Klavye & ışık** | 4 bölgeli RGB: sabit, nefes, renk döngüsü ve dalga efektleri, hazır temalar, parlaklık ve hız. Fn kilidi, Windows tuşu kilidi, touchpad ve kamera aç/kapa |
 | **Sistem** | Model, BIOS, çekirdek ve hangi sürücülerin yüklü olduğu. İsteğe bağlı sürücü için kopyalanabilir komut |
+| **Dil** | Türkçe ve İngilizce. Sistem dilini takip eder, yan menüden istediğin an değiştirilebilir |
 
 <p align="center">
-  <img src="docs/screenshots/input.png" alt="4 bölgeli RGB klavye ve giriş ayarları" width="49%">
-  <img src="docs/screenshots/performance.png" alt="Performans ekranı" width="49%">
+  <img src="docs/screenshots/tr/input.png" alt="4 bölgeli RGB klavye ve giriş ayarları" width="49%">
+  <img src="docs/screenshots/tr/performance.png" alt="Performans ekranı" width="49%">
 </p>
 <p align="center">
-  <img src="docs/screenshots/battery.png" alt="Pil ekranı" width="49%">
-  <img src="docs/screenshots/display.png" alt="Ekran ve GPU ekranı" width="49%">
+  <img src="docs/screenshots/tr/battery.png" alt="Pil ekranı" width="49%">
+  <img src="docs/screenshots/tr/display.png" alt="Ekran ve GPU ekranı" width="49%">
 </p>
 
 Açık tema, masaüstü ayarını takip eder:
 
-<p align="center"><img src="docs/screenshots/overview-light.png" alt="Açık tema" width="700"></p>
+<p align="center"><img src="docs/screenshots/tr/overview-light.png" alt="Açık tema" width="700"></p>
 
 ### Sürücüsüz çalışan ayarlar
 
@@ -122,7 +123,7 @@ sudo modprobe legion_laptop
 
 ## Yol haritası
 
-- **v0.2:** fan eğrisi düzenleyici, İngilizce arayüz (arayüz şu an Türkçe), prize takınca/çıkarınca otomatik güç modu, tepsi simgesi
+- **v0.2:** fan eğrisi düzenleyici, prize takınca/çıkarınca otomatik güç modu, tepsi simgesi
 - Hazır paketler (AUR, GitHub Releases)
 - Destekleyen modellerde güç limitleri
 

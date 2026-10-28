@@ -40,6 +40,7 @@ Nabız brings these controls back into one clean, native-feeling app:
 | **Display & GPU** | Hybrid mode (dGPU only when off), display OverDrive. The NVIDIA GPU is never woken up just to read its stats |
 | **Keyboard & lights** | 4-zone RGB with static, breathing, color cycle and wave effects, presets, brightness and speed. Fn lock, Windows-key lock, touchpad and camera on/off |
 | **System** | Model, BIOS, kernel and which drivers are active, with a copy-paste command for the optional driver |
+| **Language** | English and Turkish. Follows your system language; switch any time from the sidebar |
 
 <p align="center">
   <img src="docs/screenshots/input.png" alt="4-zone RGB keyboard and input settings" width="49%">
@@ -124,7 +125,7 @@ sudo modprobe legion_laptop
 
 ## Roadmap
 
-- **v0.2:** fan curve editor, English UI (the interface is currently in Turkish), automatic power mode on AC/battery, tray icon
+- **v0.2:** fan curve editor, automatic power mode on AC/battery, tray icon
 - Prebuilt packages (AUR, GitHub Releases)
 - Power limits on supported models
 
