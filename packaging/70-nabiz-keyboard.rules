@@ -1,0 +1,2 @@
+# Nabız: oturum açmış kullanıcı 4 bölgeli RGB klavyeye (ITE 048d:c9xx) root olmadan yazabilsin.
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="048d", ATTRS{idProduct}=="c9[5-9][0-9a-f]", TAG+="uaccess"

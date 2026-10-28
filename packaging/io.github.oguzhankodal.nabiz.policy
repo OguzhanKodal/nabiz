@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+  "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<policyconfig>
+  <vendor>Nabız</vendor>
+  <action id="io.github.oguzhankodal.nabiz.helper">
+    <description>Change laptop hardware settings</description>
+    <description xml:lang="tr">Laptop donanım ayarlarını değiştir</description>
+    <message>Nabız needs permission to change a hardware setting</message>
+    <message xml:lang="tr">Nabız bir donanım ayarını değiştirmek için izin istiyor</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <!-- Helper yalnız beyaz listedeki ayarları ve doğrulanmış değerleri kabul eder. -->
+      <allow_active>yes</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/nabiz</annotate>
+    <annotate key="org.freedesktop.policykit.exec.argv1">helper</annotate>
+  </action>
+</policyconfig>

@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Nabız
+GenericName=Laptop Control Center
+GenericName[tr]=Laptop Kontrol Merkezi
+Comment=Power modes, battery, fans, keyboard lighting and hardware toggles for Legion laptops
+Comment[tr]=Legion laptoplar için güç modu, pil, fan, klavye ışığı ve donanım ayarları
+Exec=nabiz
+Icon=io.github.oguzhankodal.nabiz
+Terminal=false
+StartupWMClass=nabiz
+Categories=System;Settings;HardwareSettings;
+Keywords=legion;lenovo;battery;fan;power;vantage;rgb;keyboard;

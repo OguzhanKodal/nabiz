@@ -1,0 +1,38 @@
+// 24px çizgi simgeler (stroke = currentColor)
+const p = (d: string) =>
+  `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+
+export const icon = {
+  pulse: p('<path d="M3 12h4l2.5-6 4 12 2.5-6H21"/>'),
+  home: p('<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/>'),
+  gauge: p('<path d="M12 14l3.5-3.5"/><path d="M3.5 18a9 9 0 1 1 17 0"/>'),
+  battery: p('<rect x="2.5" y="7" width="17" height="10" rx="2.5"/><path d="M22 10.5v3"/>'),
+  monitor: p('<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>'),
+  keyboard: p('<rect x="2.5" y="6" width="19" height="12" rx="2.5"/><path d="M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M8 14h8"/>'),
+  info: p('<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'),
+  leaf: p('<path d="M5 19c0-9 6-14 15-14 0 9-5 15-14 15"/><path d="M5 19c3-4 6-6.5 9-8"/>'),
+  scale: p('<path d="M12 4v16M7 20h10M5 8h14"/><path d="M5 8l-2.5 6a3 3 0 0 0 5 0zM19 8l-2.5 6a3 3 0 0 0 5 0z"/>'),
+  flame: p('<path d="M12 21a6.5 6.5 0 0 0 6.5-6.5c0-4-3.5-6-4-10.5-3 2-4.5 4.5-4.5 7-1-.5-2-1.5-2.3-3C6 9.7 5.5 11.8 5.5 14.5A6.5 6.5 0 0 0 12 21z"/>'),
+  sparkles: p('<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z"/>'),
+  bolt: p('<path d="M13 2.5 4.5 13.5H12L11 21.5l8.5-11H12z"/>'),
+  shield: p('<path d="M12 3l7.5 3v5.5c0 4.5-3.2 8.3-7.5 9.5-4.3-1.2-7.5-5-7.5-9.5V6z"/><path d="M9 12l2 2 4-4"/>'),
+  plug: p('<path d="M9 3v5M15 3v5M6.5 8h11v3a5.5 5.5 0 0 1-11 0zM12 16.5V21"/>'),
+  usb: p('<circle cx="12" cy="19" r="2"/><path d="M12 17V4M9 7l3-3 3 3M8 10v2l4 2.5M16 9v3l-4 2.5"/>'),
+  fan: p('<circle cx="12" cy="12" r="1.8"/><path d="M12 10.2c0-4 1-7 3.5-7 2.2 0 2.5 3.5-1.5 6.5M13.8 12c4 0 7 1 7 3.5 0 2.2-3.5 2.5-6.5-1.5M12 13.8c0 4-1 7-3.5 7-2.2 0-2.5-3.5 1.5-6.5M10.2 12c-4 0-7-1-7-3.5 0-2.2 3.5-2.5 6.5 1.5"/>'),
+  chip: p('<rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.5" y="9.5" width="5" height="5" rx="1"/><path d="M9 2.5V6M15 2.5V6M9 18v3.5M15 18v3.5M2.5 9H6M2.5 15H6M18 9h3.5M18 15h3.5"/>'),
+  gpu: p('<rect x="2.5" y="6" width="19" height="11" rx="2"/><circle cx="9" cy="11.5" r="2.8"/><path d="M15 9.5h3.5M15 13.5h3.5M5 17v3"/>'),
+  lock: p('<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>'),
+  windows: p('<path d="M4 5.5l7-1V11H4zM13 4.2l7-1V11h-7zM4 13h7v6.5l-7-1zM13 13h7v7.8l-7-1z"/>'),
+  touchpad: p('<rect x="3.5" y="4" width="17" height="16" rx="3"/><path d="M3.5 15h17M12 15v5"/>'),
+  camera: p('<rect x="2.5" y="7" width="13.5" height="10" rx="2.5"/><path d="M16 10.5l5.5-3v9l-5.5-3"/>'),
+  sun: p('<circle cx="12" cy="12" r="3.8"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>'),
+  logo: p('<path d="M7 4l5 7 5-7M12 11v9"/>'),
+  ports: p('<rect x="3" y="8" width="7" height="8" rx="1.5"/><rect x="14" y="8" width="7" height="8" rx="1.5"/><path d="M5.5 11h2M16.5 11h2"/>'),
+  power: p('<path d="M12 3v8"/><path d="M6.6 6.6a8 8 0 1 0 10.8 0"/>'),
+  monitorBolt: p('<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12.5 7l-2.5 3.5h4L11.5 14"/>'),
+  copy: p('<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>'),
+  check: p('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+  alert: p('<path d="M12 4 2.5 20h19z"/><path d="M12 10v4.5M12 17.5h.01"/>'),
+  thermo: p('<path d="M14 14.5V5a2 2 0 0 0-4 0v9.5a4 4 0 1 0 4 0z"/>'),
+  memory: p('<rect x="3" y="7" width="18" height="10" rx="1.5"/><path d="M7 10.5v3M11 10.5v3M15 10.5v3M6 17v2.5M18 17v2.5"/>'),
+};
