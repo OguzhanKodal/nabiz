@@ -5,8 +5,8 @@
 <h1 align="center">Nabız</h1>
 
 <p align="center">
-  <b>A modern, open-source control center for Lenovo Legion laptops on Linux.</b><br>
-  Power modes, battery care, live sensors, 4-zone RGB keyboard and hardware toggles in one app.
+  <b>A modern, open-source control center for Linux laptops.</b><br>
+  Power modes, live sensors, battery care and hardware toggles in one app, with the deepest support for Lenovo Legion and IdeaPad.
 </p>
 
 <p align="center">
@@ -21,11 +21,12 @@
 
 ## Why this exists
 
-On Windows, Legion owners get a vendor app that handles power modes, battery conservation, rapid charging, keyboard lighting, the Windows-key lock and so on. On Linux there is no official equivalent. The hardware is still there, but its controls are spread across sysfs files, kernel modules and several single-purpose tools.
+Laptop makers ship control apps for Windows: power modes, battery care, keyboard lighting, the Windows-key lock and so on. On Linux there is usually no official equivalent. The hardware is still there, but its controls are spread across sysfs files, kernel modules and several single-purpose tools.
 
-Nabız brings these controls back into one clean, native-feeling app:
+Nabız started on a Lenovo Legion after moving from Windows to Linux, and grew into a general control center for Linux laptops:
 
-- **Works out of the box** with the drivers that already ship in the Linux kernel (`ideapad_laptop`, `lenovo-wmi-gamezone`). No extra kernel module is needed for the core features.
+- **Works on any Linux laptop.** Monitoring, power modes, camera, touchpad and Windows-key controls use generic kernel interfaces, so they work regardless of brand.
+- **Works out of the box** with the drivers that already ship in the Linux kernel. No extra kernel module is needed for the core features.
 - **Gets more capable on its own** if the community [`legion_laptop`](https://github.com/johnfanv2/LenovoLegionLinux) driver is installed: real fan speeds, display OverDrive, hybrid/dGPU mode.
 - **Only shows what your laptop can do.** Every feature is detected at runtime. Unsupported controls are marked as such, not left as switches that silently do nothing.
 - **Checks every write.** After each change Nabız reads the value back, so a firmware that ignores a request shows up as an error instead of a fake "on".
@@ -70,7 +71,7 @@ Nabız stands on the work of other projects and does not try to replace all of t
 
 | Project | Platform | What it is |
 |---|---|---|
-| **Nabız** | Linux | One modern app for everyday controls. Core features work with the stock kernel; uses `legion_laptop` when present. Fan curve editor not available yet (planned) |
+| **Nabız** | Linux | One modern app for everyday laptop controls on any brand, with deep Lenovo support. Core features work with the stock kernel; uses `legion_laptop` when present. Fan curve editor not available yet (planned) |
 | [LenovoLegionLinux](https://github.com/johnfanv2/LenovoLegionLinux) | Linux | The kernel driver plus a Python GUI and a daemon. The most complete feature set, including fan curves; most features need its out-of-tree module. Nabız uses this driver when it is installed |
 | [Lenovo Legion Toolkit](https://github.com/BartoszCichecki/LenovoLegionToolkit) | Windows | A lightweight alternative to the vendor app on Windows. Archived in 2025 |
 | [L5P-Keyboard-RGB](https://github.com/4JX/L5P-Keyboard-RGB) | Linux, Windows | Keyboard lighting only, with many effects |
@@ -78,9 +79,20 @@ Nabız stands on the work of other projects and does not try to replace all of t
 
 ## Compatibility
 
+Nabız checks what your laptop supports at startup and only shows what works. Brand-specific hints and drivers appear only on matching hardware.
+
+| Feature | Any Linux laptop | Lenovo IdeaPad / Yoga | Lenovo Legion |
+|---|:-:|:-:|:-:|
+| CPU temperature, load, memory, battery health, NVIDIA GPU | ✅ | ✅ | ✅ |
+| Power modes (`platform_profile`) | ✅ on most recent laptops | ✅ | ✅ |
+| Camera, touchpad, Windows-key toggles | ✅ | ✅ | ✅ |
+| Battery conservation, Fn lock, always-on USB | | ✅ | ✅ |
+| Rapid charge | where the battery exposes it | ✅ | ✅ |
+| 4-zone RGB keyboard | | | ✅ (ITE `048d:c955`–`c995`) |
+| Fan speeds, OverDrive, hybrid mode | | | ✅ with `legion_laptop` |
+
 - **Tested on:** Legion 5 15ARH05 (AMD Ryzen 7 4800H, GTX 1650 Ti), CachyOS, GNOME on Wayland, kernel 7.3.
-- **Should work on:** other Legion and IdeaPad Gaming models. Nabız only enables what it finds on your machine. Reports from other models are very welcome. Please open an issue with the output of `nabiz dump`.
-- **4-zone RGB:** ITE keyboards with USB ID `048d:c955`–`c995` (the controller used by many 2020–2023 Legion models).
+- Other machines have not been tested yet; the table reflects which kernel interfaces each feature uses. Reports are very welcome: please open an issue with the output of `nabiz dump`.
 
 ## Install
 
@@ -103,7 +115,7 @@ On other distributions, install the same dependencies and run `npm install && np
 
 ### Optional: Legion driver
 
-For real fan speeds, OverDrive and hybrid mode, install the community driver from its current source:
+On Lenovo Legion laptops, install the community driver from its current source for real fan speeds, OverDrive and hybrid mode:
 
 ```bash
 sudo pacman -S --needed dkms git
@@ -149,7 +161,7 @@ Built with [Tauri 2](https://tauri.app) (Rust) and plain TypeScript. No UI frame
 
 ## Disclaimer
 
-Nabız is an independent community project. It is not affiliated with, endorsed by or sponsored by Lenovo. "Lenovo" and "Legion" are trademarks of their owner and are used here only to describe compatible hardware. Changing hardware settings is at your own risk.
+Nabız is an independent community project. It is not affiliated with, endorsed by or sponsored by Lenovo or any other laptop maker. "Lenovo", "Legion" and other brand names are trademarks of their owners and are used here only to describe compatible hardware. Changing hardware settings is at your own risk.
 
 ## License
 

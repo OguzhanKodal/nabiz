@@ -1,7 +1,7 @@
 [package]
 name = "nabiz"
 version = "0.1.0"
-description = "Lenovo Legion laptoplar için Linux kontrol merkezi"
+description = "Linux laptoplar için kontrol merkezi"
 license = "GPL-3.0-or-later"
 edition = "2021"
 

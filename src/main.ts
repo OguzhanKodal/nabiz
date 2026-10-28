@@ -83,6 +83,13 @@ function loadView(): ViewId {
 
 const feat = (id: string): FeatureState | undefined => snap?.features.find((f) => f.id === id);
 const on = (id: string) => feat(id)?.value === 1;
+const anyAvail = (ids: string[]) => ids.some((id) => feat(id)?.available);
+
+// Lenovo'ya özgü ipuçları ve sürücüler yalnız Lenovo cihazlarda gösterilir.
+const isLenovo = () => !!sys?.vendor?.toUpperCase().includes("LENOVO");
+const isLegionLike = () => isLenovo() && /legion|loq|gaming/i.test(sys?.model ?? "");
+// Lenovo pazarlama adını product_version'da tutar; diğer üreticiler product_name'de.
+const modelName = () => (isLenovo() ? sys?.model ?? sys?.machineType : sys?.machineType ?? sys?.model) ?? null;
 
 // ---------- Biçim ----------
 
@@ -207,7 +214,7 @@ function fansCard(): string {
         .join("")
     : snap?.sensors.fansUnreliable
       ? `<div class="empty small">${icon.alert}<span>${t("fan.unreliable")}</span></div>`
-      : `<div class="empty small">${icon.alert}<span>${t("fan.unreadable")}</span></div>`;
+      : `<div class="empty small">${icon.alert}<span>${t(isLenovo() ? "fan.unreadable" : "fan.unreadableGeneric")}</span></div>`;
   return `<div class="card"><div class="card-h"><span>${t("fan.title")}</span></div>${body}</div>`;
 }
 
@@ -247,7 +254,7 @@ function chartCard(): string {
 function viewOverview(): string {
   return `
   <div class="card span-3 hero">
-    <div class="card-h"><span>${t("card.power")}</span><span class="hint">${t("card.power.hint")}</span></div>
+    <div class="card-h"><span>${t("card.power")}</span>${isLenovo() ? `<span class="hint">${t("card.power.hint")}</span>` : ""}</div>
     ${profileSwitcher()}
   </div>
   <div class="card gauge-card">
@@ -265,10 +272,14 @@ function viewOverview(): string {
   </div>
   ${chartCard()}
   ${fansCard()}
-  <div class="card span-3">
+  ${
+    anyAvail(QUICK)
+      ? `<div class="card span-3">
     <div class="card-h"><span>${t("card.quick")}</span></div>
-    <div class="quick">${QUICK.map((id) => quickTile(id)).join("")}</div>
-  </div>`;
+    <div class="quick">${QUICK.filter((id) => feat(id)?.available).map((id) => quickTile(id)).join("")}</div>
+  </div>`
+      : ""
+  }`;
 }
 
 function quickTile(id: string): string {
@@ -283,7 +294,7 @@ function quickTile(id: string): string {
 function viewPerformance(): string {
   return `
   <div class="card span-3 hero">
-    <div class="card-h"><span>${t("card.power")}</span><span class="hint">${t("card.power.hint")}</span></div>
+    <div class="card-h"><span>${t("card.power")}</span>${isLenovo() ? `<span class="hint">${t("card.power.hint")}</span>` : ""}</div>
     ${profileSwitcher(true)}
   </div>
   <div class="card span-2">
@@ -295,10 +306,14 @@ function viewPerformance(): string {
     </div>
   </div>
   ${fansCard()}
-  <div class="card span-3">
+  ${
+    anyAvail(["fan_max", "instant_boot_ac", "instant_boot_usb_pd"])
+      ? `<div class="card span-3">
     <div class="card-h"><span>${t("card.fanBoot")}</span></div>
     ${toggleRow("fan_max")}${toggleRow("instant_boot_ac")}${toggleRow("instant_boot_usb_pd")}
-  </div>`;
+  </div>`
+      : ""
+  }`;
 }
 
 function viewBattery(): string {
@@ -324,7 +339,7 @@ function viewBattery(): string {
         <button data-charge="rapid" ${feat("rapid_charge")?.available ? "" : "disabled"}>${icon.bolt}<span>${t("charge.rapid")}<small>${t("charge.rapid.sub")}</small></span></button>
       </div>
       <p class="note">${t("charge.tip")}</p>`
-        : `<div class="empty">${icon.alert}<span>${t("charge.missing")}</span></div>`
+        : `<div class="empty">${icon.alert}<span>${t(isLenovo() ? "charge.missing" : "charge.missingGeneric")}</span></div>`
     }
   </div>
   <div class="card span-3">${toggleRow("usb_charging")}</div>`;
@@ -337,10 +352,14 @@ function viewDisplay(): string {
     <div><span class="muted">${t("display.dgpu")}</span><b class="big" data-bind="gpuName">—</b><span class="pill" data-bind="gpuState">—</span></div>
     <div class="stats-grid">${stat(t("stat.temp"), "gpuTemp", "°C")}${stat(t("stat.util"), "gpuUtil", "%")}${stat(t("stat.power"), "gpuPower", "W")}</div>
   </div>
-  <div class="card span-3">
+  ${
+    anyAvail(["gsync", "overdrive"])
+      ? `<div class="card span-3">
     ${toggleRow("gsync", { note: t("f.gsync.note") })}
     ${toggleRow("overdrive")}
-  </div>
+  </div>`
+      : ""
+  }
   <p class="note span-3">${t("display.note")}</p>`;
 }
 
@@ -366,6 +385,7 @@ const KBD_PRESETS: string[][] = [
 
 function kbdCard(): string {
   if (!kbd?.available) {
+    if (!isLegionLike()) return "";
     return `<div class="card span-3">${`<div class="empty">${icon.alert}<span>${t("kbd.missing")}</span></div>`}</div>`;
   }
   const zones = [0, 1, 2, 3]
@@ -446,10 +466,14 @@ function viewInput(): string {
     <div class="card-h"><span>${t("card.privacy")}</span></div>
     ${toggleRow("touchpad")}${toggleRow("camera")}
   </div>
-  <div class="card span-3">
+  ${
+    anyAvail(["logo_led", "ioport_led"])
+      ? `<div class="card span-3">
     <div class="card-h"><span>${t("card.lights")}</span></div>
     ${toggleRow("logo_led")}${toggleRow("ioport_led")}
-  </div>`;
+  </div>`
+      : ""
+  }`;
 }
 
 const INSTALL_CMD =
@@ -468,17 +492,17 @@ function viewSystem(): string {
   <div class="card span-3">
     <div class="card-h"><span>${t("card.device")}</span>${s?.demo ? `<span class="pill">${t("sys.demo")}</span>` : ""}</div>
     <div class="kv-grid">
-      ${item(t("sys.model"), s?.model)}${item(t("sys.machine"), s?.machineType)}
+      ${item(t("sys.model"), modelName())}${isLenovo() ? item(t("sys.machine"), s?.machineType) : item(t("sys.vendor"), s?.vendor)}
       ${item(t("sys.cpu"), s?.cpu)}${item("BIOS", s?.bios)}
       ${item(t("sys.os"), s?.os)}${item(t("sys.kernel"), s?.kernel)}
     </div>
   </div>
-  <div class="card span-3">
+  ${isLenovo() ? `<div class="card span-3">
     <div class="card-h"><span>${t("card.drivers")}</span></div>
     ${drv("ideapad_laptop", !!s?.ideapadDriver, t("sys.ideapad"))}
     ${drv("legion_laptop", !!s?.legionDriver, t("sys.legion"))}
     ${
-      s && !s.legionDriver
+      isLegionLike() && !s?.legionDriver
         ? `<div class="install">
         <p>${t("sys.install")}</p>
         <div class="cmd"><code>${INSTALL_CMD}</code><button class="icon-btn" data-copy="${INSTALL_CMD}" title="${t("common.copy")}">${icon.copy}</button></div>
@@ -486,7 +510,7 @@ function viewSystem(): string {
       </div>`
         : ""
     }
-  </div>
+  </div>` : ""}
   <p class="note span-3">${t("sys.disclaimer")}</p>`;
 }
 
@@ -564,7 +588,7 @@ function update() {
   document.documentElement.style.setProperty("--accent", pm?.color ?? "#3ee0b0");
 
   const binds: Record<string, string> = {
-    model: sys?.model ?? "Legion",
+    model: modelName() ?? t("common.laptop"),
     profileLabel: pm ? t("profile.mode", { label: profLabel(pm.key) }) : t("profile.none"),
     cpuTemp: n(s.cpuTemp),
     gpuTemp: n(s.gpu.temp),
@@ -759,8 +783,8 @@ setLang(lang);
 shell();
 api.systemInfo().then((s) => {
   sys = s;
-  if (view === "system") renderView();
-  update();
+  // Üreticiye bağlı ipuçları (Fn + Q, sürücüler) sistem bilgisi gelince belli olur.
+  renderView();
 });
 api.keyboard().then((k) => {
   kbd = k;

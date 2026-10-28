@@ -87,12 +87,14 @@ const tr = {
   "common.none": "Yok",
   "common.live": "Canlı",
   "common.copy": "Kopyala",
+  "common.laptop": "Laptop",
 
   "fan.title": "Fanlar",
   "fan.cpu": "CPU fanı",
   "fan.gpu": "GPU fanı",
   "fan.unreliable": "Fan sensörü bu modelde yanlış bilgi veriyor (sıcakken bile 0 gösteriyor). Legion sürücüsüyle doğru okunur.",
   "fan.unreadable": "Fan devri okunamıyor. Legion sürücüsü gerekiyor olabilir.",
+  "fan.unreadableGeneric": "Bu laptopta fan devri okunamıyor.",
 
   "card.power": "Güç modu",
   "card.power.hint": "Fn + Q ile de değişir",
@@ -136,6 +138,7 @@ const tr = {
   "charge.rapid.sub": "Kısa sürede doldurur",
   "charge.tip": "Laptop çoğunlukla prize takılıysa <b>Koruma</b> en iyisi: pil sürekli %100'de beklemez, yıllar içinde daha az yıpranır.",
   "charge.missing": "Şarj modu ayarı bulunamadı. <code>ideapad_laptop</code> sürücüsü yüklü değil olabilir.",
+  "charge.missingGeneric": "Bu laptopta şarj modu ayarı bulunamadı.",
 
   "display.dgpu": "Harici ekran kartı",
   "display.note": "Ekran kartı uyurken Nabız ona dokunmaz. Sıcaklık bilgisi o sırada anakarttan okunur.",
@@ -162,6 +165,7 @@ const tr = {
 
   "sys.model": "Model",
   "sys.machine": "Makine tipi",
+  "sys.vendor": "Üretici",
   "sys.cpu": "İşlemci",
   "sys.os": "İşletim sistemi",
   "sys.kernel": "Çekirdek",
@@ -171,7 +175,7 @@ const tr = {
   "sys.legion": "Fan devri, hızlı şarj, GPU modu, OverDrive, ışıklar. LenovoLegionLinux projesinden.",
   "sys.install": "Eksik özellikleri açmak için Legion sürücüsünü kur (Arch / CachyOS):",
   "sys.installNote": "Sürücü bağımsız bir açık kaynak projedir (johnfanv2/LenovoLegionLinux).",
-  "sys.disclaimer": "Nabız bağımsız bir açık kaynak projedir; Lenovo ile bağlantısı yoktur.",
+  "sys.disclaimer": "Nabız bağımsız bir açık kaynak projedir; hiçbir laptop üreticisiyle bağlantısı yoktur.",
 
   "toast.reboot": "Değişiklik yeniden başlatınca geçerli olacak",
   "toast.copied": "Komut kopyalandı",
@@ -270,12 +274,14 @@ const en: Record<Key, string> = {
   "common.none": "None",
   "common.live": "Live",
   "common.copy": "Copy",
+  "common.laptop": "Laptop",
 
   "fan.title": "Fans",
   "fan.cpu": "CPU fan",
   "fan.gpu": "GPU fan",
   "fan.unreliable": "The fan sensor reports wrong values on this model (0 even when hot). The Legion driver reads it correctly.",
   "fan.unreadable": "Fan speed can't be read. The Legion driver may be required.",
+  "fan.unreadableGeneric": "Fan speed can't be read on this laptop.",
 
   "card.power": "Power mode",
   "card.power.hint": "Also switches with Fn + Q",
@@ -319,6 +325,7 @@ const en: Record<Key, string> = {
   "charge.rapid.sub": "Fills up fast",
   "charge.tip": "If your laptop is mostly plugged in, <b>Conservation</b> is best: the battery doesn't sit at 100% all the time and wears out less over the years.",
   "charge.missing": "No charging mode setting found. The <code>ideapad_laptop</code> driver may not be loaded.",
+  "charge.missingGeneric": "No charging mode setting found on this laptop.",
 
   "display.dgpu": "Discrete GPU",
   "display.note": "Nabız leaves the GPU alone while it sleeps. Its temperature is read from the mainboard meanwhile.",
@@ -345,6 +352,7 @@ const en: Record<Key, string> = {
 
   "sys.model": "Model",
   "sys.machine": "Machine type",
+  "sys.vendor": "Manufacturer",
   "sys.cpu": "CPU",
   "sys.os": "Operating system",
   "sys.kernel": "Kernel",
@@ -354,7 +362,7 @@ const en: Record<Key, string> = {
   "sys.legion": "Fan speeds, rapid charge, GPU mode, OverDrive, lights. From the LenovoLegionLinux project.",
   "sys.install": "Install the Legion driver to unlock the missing features (Arch / CachyOS):",
   "sys.installNote": "The driver is an independent open-source project (johnfanv2/LenovoLegionLinux).",
-  "sys.disclaimer": "Nabız is an independent open-source project, not affiliated with Lenovo.",
+  "sys.disclaimer": "Nabız is an independent open-source project, not affiliated with any laptop maker.",
 
   "toast.reboot": "The change takes effect after a restart",
   "toast.copied": "Command copied",
